@@ -87,7 +87,7 @@ void loop()
     if (prev_state != state) 
     {
         prev_state = state;
-        client.publish("avshrs/sensors/hormann_garage_01/state/door", state->c_str());
+        client.publish("avshrs/sensors/hormann_garage_01/state/door", state.c_str());
     }
 
     
