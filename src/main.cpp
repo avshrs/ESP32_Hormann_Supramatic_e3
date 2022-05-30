@@ -47,10 +47,11 @@ void setup()
     
     hoermann.init(&state, EnTxPin);
 
-    Serial.begin(115200);
+    Serial.begin(256000);
     
     Serial2.begin(19200);
-    Serial2.setTimeout(100);  
+    Serial2.setTimeout(2);
+    
     pinMode(EnTxPin, OUTPUT);  
     digitalWrite(EnTxPin, LOW);
     pinMode(BUILTIN_LED, OUTPUT);  

@@ -1,12 +1,13 @@
 #pragma once
-#include <Vector.h>
 
 struct TX_Buffer{
-    Vector<uint8_t> buf;
+    uint8_t buf[10];
+    size_t size;
     int timeout = 0;
 };
 struct RX_Buffer{
-    Vector<uint8_t> buf;
+    uint8_t buf[10];
+    size_t size;
 };
 
 

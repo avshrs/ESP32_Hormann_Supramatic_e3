@@ -85,7 +85,7 @@ class Hoermann{
         void pub_thread();
 
         
-        void print_buffer(uint8_t* buf, int len);
+        void print_buffer(RX_Buffer &buf);
         
         void update_broadcast_status(RX_Buffer &buf);
         

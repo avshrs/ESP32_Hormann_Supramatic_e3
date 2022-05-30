@@ -24,25 +24,18 @@ void SerialW::serial_send(TX_Buffer &tx_buffer)
 { 	
     digitalWrite(EnTxPin, HIGH);
     send_brake();
-    Serial2.write(tx_buffer.buf.data(), tx_buffer.buf.size());
+    Serial2.write(tx_buffer.buf, tx_buffer.size);
     digitalWrite(EnTxPin, LOW);
     
 }
 
 void SerialW::serial_read(RX_Buffer &rx_buffer)
 {	
-  uint8_t buf[16] = {0};
-  int s = Serial2.read(buf, sizeof(buf));
-
-  if(s>3)
-  {
-      for(int i=0; i < s; i++)
-      {
-          rx_buffer.buf.push_back(buf[i]);
-          Serial.print(buf[i]);
-      }
-      Serial.println();
-  } 
+    uint8_t buf_[10];
+    if(Serial2.available() > 0)
+    {
+        rx_buffer.size =  Serial2.readBytes(rx_buffer.buf, 10);
+    }
 }
 
 
