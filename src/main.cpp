@@ -8,7 +8,7 @@ int d = 1;
 unsigned long previousMillis = 0;  
 unsigned long previousMillis2 = 0;  
 Hoermann hoermann; 
-String * state;
+String state;
 String prev_state;
 
 void callback(char* topic, byte* payload, unsigned int length) 
@@ -45,7 +45,7 @@ void setup()
     int EnTxPin =  4;
     Wire.begin();
     
-    hoermann.init(state, EnTxPin);
+    hoermann.init(&state, EnTxPin);
 
     Serial.begin(115200);
     
@@ -84,9 +84,9 @@ void loop()
         snprintf (msg, MSG_BUFFER_SIZE, "true");
         client.publish("avshrs/sensors/hormann_garage_01/status/connected", msg);
     }
-    if (prev_state != *state) 
+    if (prev_state != state) 
     {
-        prev_state = *state;
+        prev_state = state;
         client.publish("avshrs/sensors/hormann_garage_01/state/door", state->c_str());
     }
 

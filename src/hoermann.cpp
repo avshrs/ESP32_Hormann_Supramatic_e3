@@ -33,7 +33,7 @@ void Hoermann::run_loop(void)
         rx_buf.buf.clear();
         tx_buf.buf.clear();
         ser.serial_read(rx_buf);
-        print_buffer(rx_buf.buf.data(), rx_buf.buf.size());
+        // print_buffer(rx_buf.buf.data(), rx_buf.buf.size());
 
         start = millis();
         if(is_frame_corect(rx_buf))
@@ -42,7 +42,7 @@ void Hoermann::run_loop(void)
             {
                 if(is_broadcast_lengh_correct(rx_buf))
                     {
-                        print_buffer(rx_buf.buf.data(), rx_buf.buf.size());
+                        // print_buffer(rx_buf.buf.data(), rx_buf.buf.size());
                         update_broadcast_status(rx_buf);
                     }
             }
