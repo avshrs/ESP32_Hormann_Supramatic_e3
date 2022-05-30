@@ -1,69 +1,95 @@
-/*********
-  Rui Santos
-  Complete project details at http://randomnerdtutorials.com  
-*********/
+#include <string.h>
+#include <Wire.h>
+#include "passwd.h"
+#include "wifi_mqtt.h"
+#include "hoermann.h"
 
-TaskHandle_t Task1;
-TaskHandle_t Task2;
+int d = 1; 
+unsigned long previousMillis = 0;  
+unsigned long previousMillis2 = 0;  
+Hoermann hoermann; 
+String * state;
+String prev_state;
 
-// LED pins
-const int led1 = 2;
-const int led2 = 4;
+void callback(char* topic, byte* payload, unsigned int length) 
+{
+    Serial.print("Message arrived [");
+    Serial.print(topic);
+    Serial.print("] ");
+    String st;
+    for (int i = 0; i < length; i++) {
+        Serial.print((char)payload[i]);
+        st +=(char)payload[i];
+    }
 
-void setup() {
-  Serial.begin(115200); 
-  pinMode(led1, OUTPUT);
-  pinMode(led2, OUTPUT);
+    Serial.println();
+    if (strcmp(topic,"avshrs/sensors/hormann_garage_01/set/door")) 
+    {   
+        hoermann.set_state(st);
 
-  //create a task that will be executed in the Task1code() function, with priority 1 and executed on core 0
-  xTaskCreatePinnedToCore(
-                    Task1code,   /* Task function. */
-                    "Task1",     /* name of task. */
-                    10000,       /* Stack size of task */
-                    NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
-                    &Task1,      /* Task handle to keep track of created task */
-                    0);          /* pin task to core 0 */                  
-  delay(500); 
+    } 
+    else if (strcmp(topic,"avshrs/sensors/hormann_garage_01/Esp_led") == 0 && (char)payload[0] == '1') 
+    {
+        digitalWrite(BUILTIN_LED, LOW);   
+    } 
+    else if (strcmp(topic,"avshrs/sensors/hormann_garage_01/Esp_led") == 0 && (char)payload[0] == '0') 
+    {
+        digitalWrite(BUILTIN_LED, HIGH); 
+    }
 
-  //create a task that will be executed in the Task2code() function, with priority 1 and executed on core 1
-  xTaskCreatePinnedToCore(
-                    Task2code,   /* Task function. */
-                    "Task2",     /* name of task. */
-                    10000,       /* Stack size of task */
-                    NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
-                    &Task2,      /* Task handle to keep track of created task */
-                    1);          /* pin task to core 1 */
-    delay(500); 
+
 }
 
-//Task1code: blinks an LED every 1000 ms
-void Task1code( void * pvParameters ){
-  Serial.print("Task1 running on core ");
-  Serial.println(xPortGetCoreID());
+void setup() 
+{
+    int EnTxPin =  4;
+    Wire.begin();
+    
+    hoermann.init(state, EnTxPin);
 
-  for(;;){
-    digitalWrite(led1, HIGH);
-    delay(1000);
-    digitalWrite(led1, LOW);
-    delay(1000);
-  } 
+    Serial.begin(115200);
+    
+    Serial2.begin(19200);
+    Serial2.setTimeout(100);  
+    pinMode(EnTxPin, OUTPUT);  
+    digitalWrite(EnTxPin, LOW);
+    pinMode(BUILTIN_LED, OUTPUT);  
+    digitalWrite(BUILTIN_LED, LOW);   
+    setup_wifi();
+
+    client.setServer(mqtt_server, 1883);
+    client.setBufferSize(1024);
+    client.setCallback(callback);
 }
 
-//Task2code: blinks an LED every 700 ms
-void Task2code( void * pvParameters ){
-  Serial.print("Task2 running on core ");
-  Serial.println(xPortGetCoreID());
 
-  for(;;){
-    digitalWrite(led2, HIGH);
-    delay(700);
-    digitalWrite(led2, LOW);
-    delay(700);
-  }
-}
 
-void loop() {
-  
+
+void loop() 
+{
+    currentMillis = millis();
+
+    if (!client.connected()) 
+    {
+        reconnect();
+    }
+    client.loop();
+    
+    if (currentMillis - previousMillis >= 60000) 
+    {
+        previousMillis = currentMillis;
+
+        wifi_status();
+
+        snprintf (msg, MSG_BUFFER_SIZE, "true");
+        client.publish("avshrs/sensors/hormann_garage_01/status/connected", msg);
+    }
+    if (prev_state != *state) 
+    {
+        prev_state = *state;
+        client.publish("avshrs/sensors/hormann_garage_01/state/door", state->c_str());
+    }
+
+    
+    hoermann.run_loop();
 }
