@@ -4,12 +4,13 @@
 #include "wifi_mqtt.h"
 #include "hoermann.h"
 
+
 int d = 1; 
 unsigned long previousMillis = 0;  
 unsigned long previousMillis2 = 0;  
 Hoermann hoermann; 
-String state;
-String prev_state;
+String state = "n/a";
+
 
 void callback(char* topic, byte* payload, unsigned int length) 
 {
@@ -23,16 +24,16 @@ void callback(char* topic, byte* payload, unsigned int length)
     }
 
     Serial.println();
-    if (strcmp(topic,"avshrs/sensors/hormann_garage_01/set/door")) 
+    if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/set/door")) 
     {   
         hoermann.set_state(st);
 
     } 
-    else if (strcmp(topic,"avshrs/sensors/hormann_garage_01/Esp_led") == 0 && (char)payload[0] == '1') 
+    else if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/Esp_led") == 0 && (char)payload[0] == '1') 
     {
         digitalWrite(BUILTIN_LED, LOW);   
     } 
-    else if (strcmp(topic,"avshrs/sensors/hormann_garage_01/Esp_led") == 0 && (char)payload[0] == '0') 
+    else if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/Esp_led") == 0 && (char)payload[0] == '0') 
     {
         digitalWrite(BUILTIN_LED, HIGH); 
     }
@@ -42,15 +43,16 @@ void callback(char* topic, byte* payload, unsigned int length)
 
 void setup() 
 {
-    int EnTxPin =  4;
+    int EnTxPin =  18;
     Wire.begin();
-    
-    hoermann.init(&state, EnTxPin);
+    hoermann.init(EnTxPin);
 
-    Serial.begin(256000);
+    Serial.begin(576000);
     
-    Serial2.begin(19200);
-    Serial2.setTimeout(2);
+    // Serial2.begin(19200);
+    // Serial2.setTimeout(2);
+    // Serial2.setRxBufferSize(10);
+    
     
     pinMode(EnTxPin, OUTPUT);  
     digitalWrite(EnTxPin, LOW);
@@ -75,6 +77,9 @@ void loop()
         reconnect();
     }
     client.loop();
+    hoermann.run_loop();
+    
+    
     
     if (currentMillis - previousMillis >= 60000) 
     {
@@ -83,14 +88,17 @@ void loop()
         wifi_status();
 
         snprintf (msg, MSG_BUFFER_SIZE, "true");
-        client.publish("avshrs/sensors/hormann_garage_01/status/connected", msg);
+        client.publish("avshrs/sensors/hormann_garage_door_01/status/connected", msg);
+        client.publish("avshrs/sensors/hormann_garage_door_01/state/door", hoermann.get_state().c_str());
     }
-    if (prev_state != state) 
+    
+    if (state != hoermann.get_state()) 
     {
-        prev_state = state;
-        client.publish("avshrs/sensors/hormann_garage_01/state/door", state.c_str());
+        state = hoermann.get_state();
+        client.publish("avshrs/sensors/hormann_garage_door_01/state/door", hoermann.get_state().c_str());
     }
+    
 
     
-    hoermann.run_loop();
+   
 }

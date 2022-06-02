@@ -54,8 +54,9 @@ class Hoermann{
         SerialW ser;
 
     private:
+        RX_Buffer rx_buf;
+        TX_Buffer tx_buf;
         unsigned long previousMillis = 0;  
-        String * state;
         uint8_t tx_length = 0;
         uint8_t slave_respone_data = RESPONSE_DEFAULT;
         uint8_t master_address = 0x80;
@@ -69,7 +70,7 @@ class Hoermann{
 
     public:
     
-        void init(String * set_state, int tx_pin);
+        void init( int tx_pin);
         void run_loop(void);
         void door_open();
         void door_close();
@@ -85,7 +86,8 @@ class Hoermann{
         void pub_thread();
 
         
-        void print_buffer(RX_Buffer &buf);
+        void print_buffer(uint8_t *buf, int size);
+        void print_buffer(TX_Buffer &buf);
         
         void update_broadcast_status(RX_Buffer &buf);
         

@@ -5,12 +5,13 @@
 #include <string>
 #include "vars.h"
 
+
+
 class SerialW
 {
   public:
-    int fd;
     int lead_z = 0 ;
-    int EnTxPin =  0;  // HIGH:Transmitter, LOW:Receiver
+    int EnTxPin =  4;  // HIGH:Transmitter, LOW:Receiver
      
 
     void serial_open(int tx_pin);
