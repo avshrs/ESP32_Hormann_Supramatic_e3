@@ -72,6 +72,34 @@ void setup()
     client.setServer(mqtt_server, 1883);
     client.setBufferSize(1024);
     client.setCallback(callback);
+
+
+}
+
+
+void door_position(boolean force)
+{
+    if (state != hoermann.get_state() || force ) 
+    {
+        state = hoermann.get_state();
+        
+        if (hoermann.get_state() == "open")
+        {
+            client.publish("avshrs/sensors/hormann_garage_door_01/state/door", "100");
+        }
+        else if (hoermann.get_state() == "closed")
+        {
+            client.publish("avshrs/sensors/hormann_garage_door_01/state/door", "0");
+        }
+        else if (hoermann.get_state() == "venting")
+        {
+            client.publish("avshrs/sensors/hormann_garage_door_01/state/door", "10");
+        }
+        else
+        {
+            client.publish("avshrs/sensors/hormann_garage_door_01/state/door", "error");
+        }
+    }
 }
 
 
@@ -112,13 +140,9 @@ void loop()
         snprintf (msg, MSG_BUFFER_SIZE, "%i", hoermann.get_req_resp_time());
         client.publish("avshrs/sensors/hormann_garage_door_01/status/req_resp_time", msg);
 
-        client.publish("avshrs/sensors/hormann_garage_door_01/state/door", hoermann.get_state().c_str());
+        door_position(true);        
     }
     
-    if (state != hoermann.get_state()) 
-    {
-        state = hoermann.get_state();
-        client.publish("avshrs/sensors/hormann_garage_door_01/state/door", hoermann.get_state().c_str());
-    }
+    door_position(false);        
     
 }

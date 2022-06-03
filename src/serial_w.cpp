@@ -35,7 +35,7 @@ void SerialW::serial_send(TX_Buffer &tx_buffer)
 
     while(!Serial2.availableForWrite()){}
     Serial2.write(tx_buffer.buf, tx_buffer.size);   
-    delay(2);
+    delay(3);
     Serial2.write(tx_buffer.buf, tx_buffer.size);    
     digitalWrite(EnTxPin, LOW);
 } 
