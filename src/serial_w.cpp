@@ -81,11 +81,12 @@ void SerialW::serial_read(RX_Buffer &rx_buffer)
             while(!(Serial2.available())){}
             
             buf = Serial2.read();
+            rx_buffer.buf[1] =  buf;
             for( int i = 0 ; i<3; i++ ) 
             {
                 while(!(Serial2.available())){}
                 buf = Serial2.read();
-                rx_buffer.buf[1+i] =  buf;
+                rx_buffer.buf[2+i] =  buf;
             }
             rx_buffer.size = 5;
             

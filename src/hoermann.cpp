@@ -92,7 +92,9 @@ void Hoermann::run_loop(void)
         {
             if (is_broadcast_lengh_correct(rx_buf))
             {
+                
                 update_broadcast_status(rx_buf);
+                broadcast_recv = true;
             }
         }
         
@@ -124,6 +126,24 @@ String Hoermann::is_scanning()
     {
         return (String)"0";
     }
+}
+
+
+String Hoermann::is_broadcast_recv()
+{
+    if (broadcast_recv)
+    {
+        return (String)"1";
+    }
+    else
+    {
+        return (String)"0";
+    }
+}     
+
+void Hoermann::reset_broadcast()
+{
+    broadcast_recv = false;
 }
 
 void Hoermann::reset_connected()
@@ -333,11 +353,17 @@ void Hoermann::make_status_req_msg(RX_Buffer &rx_buf, TX_Buffer &tx_buf)
         tx_buf.buf[3] = static_cast<uint8_t>(slave_respone_data);
         tx_buf.buf[4] = 0x10;
     }
-    slave_respone_data = RESPONSE_DEFAULT;
+    if (req_resp_counter > 2)
+    {
+        slave_respone_data = RESPONSE_DEFAULT;
+        req_resp_counter = 0;
+    }
+    req_resp_counter++;
     tx_buf.buf[5] = calc_crc8(tx_buf.buf, 5);
     tx_buf.timeout = 1;
     tx_buf.size = 6;
 }
+
 
 String Hoermann::get_state()
 {

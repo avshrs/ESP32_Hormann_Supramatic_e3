@@ -88,7 +88,7 @@ void loop()
     client.loop();
     hoermann.run_loop();
     
-    if (currentMillis - previousMillis >= 60000) 
+    if (currentMillis - previousMillis >= 1000) 
     {
         previousMillis = currentMillis;
 
@@ -96,13 +96,16 @@ void loop()
 
         snprintf (msg, MSG_BUFFER_SIZE, "true");
         client.publish("avshrs/sensors/hormann_garage_door_01/status/connected", msg);
-        
-        client.publish("avshrs/sensors/hormann_garage_door_01/status/response_to_master", hoermann.is_connected().c_str());
-        hoermann.reset_connected();
+
+        client.publish("avshrs/sensors/hormann_garage_door_01/status/master_sending_broadcast", hoermann.is_broadcast_recv().c_str());
+        hoermann.reset_broadcast();
 
         client.publish("avshrs/sensors/hormann_garage_door_01/status/master_is_scanning", hoermann.is_scanning().c_str());
         hoermann.reset_scanning();
-        
+
+        client.publish("avshrs/sensors/hormann_garage_door_01/status/response_to_master", hoermann.is_connected().c_str());
+        hoermann.reset_connected();
+
         snprintf (msg, MSG_BUFFER_SIZE, "%i", hoermann.get_scan_resp_time());
         client.publish("avshrs/sensors/hormann_garage_door_01/status/scan_resp_time", msg);
         

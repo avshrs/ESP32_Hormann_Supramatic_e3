@@ -64,8 +64,10 @@ class Hoermann{
         int max_frame_delay = 6000;
         boolean scanning = false; 
         boolean connected = false; 
+        boolean broadcast_recv = false; 
         int scan_resp_time = 0;  
         int req_resp_time = 0;  
+        int req_resp_counter = 0; 
         int delay_msg = 1000;  
 
     public:
@@ -80,7 +82,9 @@ class Hoermann{
         String is_connected();        
         void reset_connected();       
         String is_scanning();        
-        void reset_scanning();        
+        void reset_scanning();       
+        String is_broadcast_recv();         
+        void reset_broadcast();        
         String get_state();
         void set_state(String action);
         int get_scan_resp_time();
