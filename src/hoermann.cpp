@@ -13,31 +13,20 @@
 
 void Hoermann::init(int tx_pin)
 {
-
     ser.serial_open(tx_pin);
 }
 
 void Hoermann::run_loop(void)
 {
-    Serial2.setTimeout(3);
-    // Serial2.setRxBufferSize(8);
-
-    unsigned long start = millis();
-
-
-    for (int i = 0; i < 7; i++)
-    {
-        rx_buf.buf[i] = 0x00;
-        tx_buf.buf[i] = 0x00;
-    }
-    tx_buf.size = 0;
-    rx_buf.size = 0;
-
-
+    RX_Buffer rx_buf;
+    TX_Buffer tx_buf;
+    unsigned long start;
+    unsigned long s;
     ser.serial_read(rx_buf);
-    int s = millis();
-    start = millis();
-     print_buffer(rx_buf.buf,rx_buf.size);
+
+    s = micros();
+    start = s;
+
     if (is_frame_corect(rx_buf))
     {
         if (is_slave_query(rx_buf))
@@ -48,34 +37,45 @@ void Hoermann::run_loop(void)
                 make_scan_responce_msg(rx_buf, tx_buf);
                 while (true)
                 {
-                    if ((millis() - start) > (0))
+                    if ((micros() - start) > (1000))
                     {
-                        if ((millis() - start) > 7)
+                        if ((micros() - start) > max_frame_delay)
                         {
                             break;
                         }
-
+                        scanning = true;
                         ser.serial_send(tx_buf);
+                        print_buffer(tx_buf);
+                        Serial.print("scan_response time: ");
+                        scan_resp_time = micros() -s ;
+                        Serial.println(scan_resp_time);
+                        
+
                         break;
                     }
                 }
             }
             else if (is_slave_status_req(rx_buf))
-            {
-               
+            {   
+                
                 make_status_req_msg(rx_buf, tx_buf);
 
                 while (true)
                 {
-
-                    if ((millis() - start) > (0))
+                    
+                    if ((micros() - start) > (1000))
                     {
-                        if ((millis() - start) > 7)
+                        if ((micros() - start) > max_frame_delay)
                         {
                             break;
                         }
-                        print_buffer(tx_buf);
+                        connected = true;    
                         ser.serial_send(tx_buf);
+                        print_buffer(tx_buf);
+                        Serial.print("status_req_response time: ");
+                        req_resp_time = micros() -s;
+                        Serial.println(req_resp_time);
+                        
                         break;
                     }
 
@@ -91,6 +91,49 @@ void Hoermann::run_loop(void)
         }
         
     }
+}
+
+String Hoermann::is_connected()
+{
+    if (connected)
+    {
+        return (String)"1";
+    }
+    else
+    {
+        return (String)"0";
+    }
+}
+String Hoermann::is_scanning()
+{
+    if (scanning)
+    {
+        return (String)"1";
+    }
+    else
+    {
+        return (String)"0";
+    }
+}
+
+void Hoermann::reset_connected()
+{
+    connected = false;
+}
+
+void Hoermann::reset_scanning()
+{
+    scanning = false;
+}
+
+int Hoermann::get_scan_resp_time()
+{
+    return scan_resp_time;
+}
+
+int Hoermann::get_req_resp_time()
+{
+    return req_resp_time;
 }
 
 void Hoermann::update_broadcast_status(RX_Buffer &buf)

@@ -22,19 +22,27 @@ void callback(char* topic, byte* payload, unsigned int length)
         Serial.print((char)payload[i]);
         st +=(char)payload[i];
     }
-
     Serial.println();
-    if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/set/door")) 
-    {   
-        hoermann.set_state(st);
 
+    if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/set/door") == 0)  
+    {   
+        Serial.print("set/door: ");
+        Serial.println(st);
+        hoermann.set_state(st);
     } 
-    else if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/Esp_led") == 0 && (char)payload[0] == '1') 
+    else if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/set/light") == 0)  
+    {   
+        if (st == "toggle")
+            hoermann.set_state("light");
+    }
+    else if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/esp_led") == 0 && (char)payload[0] == '1') 
     {
+        Serial.println("BUILTIN_LED_low");
         digitalWrite(BUILTIN_LED, LOW);   
     } 
-    else if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/Esp_led") == 0 && (char)payload[0] == '0') 
+    else if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/esp_led") == 0 && (char)payload[0] == '0') 
     {
+        Serial.println("BUILTIN_LED_high");
         digitalWrite(BUILTIN_LED, HIGH); 
     }
 
@@ -47,12 +55,7 @@ void setup()
     Wire.begin();
     hoermann.init(EnTxPin);
 
-    Serial.begin(576000);
-    
-    // Serial2.begin(19200);
-    // Serial2.setTimeout(2);
-    // Serial2.setRxBufferSize(10);
-    
+    Serial.begin(1000000);
     
     pinMode(EnTxPin, OUTPUT);  
     digitalWrite(EnTxPin, LOW);
@@ -79,8 +82,6 @@ void loop()
     client.loop();
     hoermann.run_loop();
     
-    
-    
     if (currentMillis - previousMillis >= 60000) 
     {
         previousMillis = currentMillis;
@@ -89,6 +90,19 @@ void loop()
 
         snprintf (msg, MSG_BUFFER_SIZE, "true");
         client.publish("avshrs/sensors/hormann_garage_door_01/status/connected", msg);
+        
+        client.publish("avshrs/sensors/hormann_garage_door_01/status/response_to_master", hoermann.is_connected().c_str());
+        hoermann.reset_connected();
+
+        client.publish("avshrs/sensors/hormann_garage_door_01/status/master_is_scanning", hoermann.is_scanning().c_str());
+        hoermann.reset_scanning();
+        
+        snprintf (msg, MSG_BUFFER_SIZE, "%i", hoermann.get_scan_resp_time());
+        client.publish("avshrs/sensors/hormann_garage_door_01/status/scan_resp_time", msg);
+        
+        snprintf (msg, MSG_BUFFER_SIZE, "%i", hoermann.get_req_resp_time());
+        client.publish("avshrs/sensors/hormann_garage_door_01/status/req_resp_time", msg);
+
         client.publish("avshrs/sensors/hormann_garage_door_01/state/door", hoermann.get_state().c_str());
     }
     
@@ -98,7 +112,4 @@ void loop()
         client.publish("avshrs/sensors/hormann_garage_door_01/state/door", hoermann.get_state().c_str());
     }
     
-
-    
-   
 }

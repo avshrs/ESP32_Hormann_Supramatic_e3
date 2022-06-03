@@ -38,7 +38,9 @@ void reconnect()
             {
                 Serial.println("connected to MQTT server");
                 // MQTT subscription
-                client.subscribe("avshrs/sensors/hormann_garage_door_01/Esp_led");
+                
+                client.subscribe("avshrs/sensors/hormann_garage_door_01/set/light");
+                client.subscribe("avshrs/sensors/hormann_garage_door_01/esp_led");
                 client.subscribe("avshrs/sensors/hormann_garage_door_01/set/door");
 
             } 
@@ -77,15 +79,13 @@ void wifi_status()
 }
 
 
-void ha_settings()
+void prepare_conf()
 {
-    char s3[] = "{\"avty\":{\"topic\":\"avshrs/sensors/hormann_garage_door_01/status/connected\",\"payload_available\":\"true\",\"payload_not_available\":\"false\"},\"~\":\"avshrs/sensors/hormann_garage_door_01\",\"device\":{\"ids\":\"garage_door_sensor-01\",\"mf\":\"Avshrs\",\"name\":\"SupraMatic3-01\",\"sw\":\"0.0.1\"},\"name\":\"Garage door\",\"uniq_id\":\"hormann_garage_door_01\",\"qos\":0,\"unit_of_meas\":\"°C\",\"stat_t\":\"~/state/bme280_temperature\",\"val_tpl\":\"{{ value | round(2)}}\",\"dev_cla\":\"temperature\"}";
-    client.publish("homeassistant/sensor/garage_door_sensor-01/bme_temperature/config", s3, true);
-    delay(400);
+    char s1[] = "{\"avty\":{\"topic\":\"avshrs/sensors/hormann_garage_door_01/status/connected\",\"payload_available\":\"true\",\"payload_not_available\":\"false\"},\"~\":\"avshrs/sensors/hormann_garage_door_01\",\"device\":{\"ids\":\"garage_door_sensor-01\",\"mf\":\"Avshrs\",\"name\":\"SupraMatic3-01\",\"sw\":\"0.0.1\"},\"name\":\"Garage door\",\"uniq_id\":\"hormann_garage_door_01\",\"qos\":0,\"command_topic\":\"~/set/door\",\"position_topic\":\"~state/door\",\"device_class\":\"cover\",\"payload_open\":\"OPEN\",\"payload_close\":\"CLOSE\",\"payload_stop\":\"STOP\",\"position_open\":\"100\",\"position_closed\":\"0\",\"position_template\": \">-{% if value == \"open\" %}100{% elif value == \"closed\" %}0{% else %}10{% endif %}\"}";
+    char s2[] = "{\"avty\":{\"topic\":\"avshrs/sensors/hormann_garage_door_01/status/connected\",\"payload_available\":\"true\",\"payload_not_available\":\"false\"},\"~\":\"avshrs/sensors/hormann_garage_door_01\",\"device\":{\"ids\":\"garage_door_sensor-01\",\"mf\":\"Avshrs\",\"name\":\"SupraMatic3-01\",\"sw\":\"0.0.1\"},\"name\":\"Garage door\",\"uniq_id\":\"hormann_garage_door_01\",\"qos\":0,\"command_topic\":\"~/set/venting\",\"state_topic\":\"~state/venting\",\"device_class\":\"cover\",\"payload_open\":\"OPEN\",\"payload_close\":\"CLOSE\",\"payload_stop\":\"STOP\",\"position_open\":\"100\",\"position_closed\":\"0\",\"position_template\": \">-{% if value == \"open\" %}100{% elif value == \"closed\" %}0{% else %}10{% endif %}\"}";
     
+
 }
-
-
 
 void setup_wifi() 
 {

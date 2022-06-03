@@ -54,19 +54,18 @@ class Hoermann{
         SerialW ser;
 
     private:
-        RX_Buffer rx_buf;
-        TX_Buffer tx_buf;
+        
         unsigned long previousMillis = 0;  
-        uint8_t tx_length = 0;
         uint8_t slave_respone_data = RESPONSE_DEFAULT;
         uint8_t master_address = 0x80;
         uint16_t broadcast_status = 0;
-        uint8_t lz = 0;
         uint8_t broadcast_lengh = 0x02; 
         uint8_t reguest_lengh = 0x01; 
-        int max_frame_delay = 6;
-        const char* serial_name;
-        int boudrate;
+        int max_frame_delay = 6000;
+        boolean scanning = false; 
+        boolean connected = false; 
+        int scan_resp_time = 0;  
+        int req_resp_time = 0;  
 
     public:
     
@@ -77,15 +76,18 @@ class Hoermann{
         void door_venting();
         void door_toggle_light();
         void door_stop();
-        // void door_lock();
+        String is_connected();        
+        void reset_connected();       
+        String is_scanning();        
+        void reset_scanning();        
         String get_state();
         void set_state(String action);
+        int get_scan_resp_time();
+        int get_req_resp_time();
 
 
     private:
-        void pub_thread();
 
-        
         void print_buffer(uint8_t *buf, int size);
         void print_buffer(TX_Buffer &buf);
         

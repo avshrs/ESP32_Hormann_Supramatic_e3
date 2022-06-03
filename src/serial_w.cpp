@@ -12,7 +12,6 @@ void SerialW::serial_open(int tx_pin)
 void SerialW::send_brake()
 {
     char buf[1] = {0};
-
     
     Serial2.updateConfig(9600, SERIAL_7N1);
     Serial2.flush(true);
@@ -28,7 +27,6 @@ void SerialW::send_brake()
 
 void SerialW::serial_send(TX_Buffer &tx_buffer)
 { 	
-    uint8_t buf[1]={0};
     digitalWrite(EnTxPin, HIGH);
 
     send_brake();
@@ -37,9 +35,7 @@ void SerialW::serial_send(TX_Buffer &tx_buffer)
 
     while(!Serial2.availableForWrite()){}
     Serial2.write(tx_buffer.buf, tx_buffer.size);   
-
-    delay(2) ;
-
+    delay(2);
     Serial2.write(tx_buffer.buf, tx_buffer.size);    
     digitalWrite(EnTxPin, LOW);
 } 
@@ -85,25 +81,13 @@ void SerialW::serial_read(RX_Buffer &rx_buffer)
         {
             while(!(Serial2.available())){}
             buf = Serial2.read();
-            
-            if(buf == 0x12)
+            for( int i = 0 ; i<3; i++ ) 
             {
-                rx_buffer.buf[1] =  buf;
-                for( int i = 0 ; i<3; i++ ) 
-                {
-                    while(!(Serial2.available())){}
-                    buf = Serial2.read();
-                    rx_buffer.buf[2+i] =  buf;
-                }
-                rx_buffer.size = 5;
+                while(!(Serial2.available())){}
+                buf = Serial2.read();
+                rx_buffer.buf[2+i] =  buf;
             }
-            else
-            {
-                rx_buffer.size = 0;
-                rx_buffer.buf[0]=0;
-                rx_buffer.buf[1]=0;
-        
-            }
+            rx_buffer.size = 5;
             
         }
     
