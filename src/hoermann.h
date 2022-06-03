@@ -66,6 +66,7 @@ class Hoermann{
         boolean connected = false; 
         int scan_resp_time = 0;  
         int req_resp_time = 0;  
+        int delay_msg = 1000;  
 
     public:
     
@@ -83,6 +84,7 @@ class Hoermann{
         String get_state();
         void set_state(String action);
         int get_scan_resp_time();
+        int set_delay(int delay);
         int get_req_resp_time();
 
 

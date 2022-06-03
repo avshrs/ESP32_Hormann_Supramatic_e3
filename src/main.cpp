@@ -30,6 +30,12 @@ void callback(char* topic, byte* payload, unsigned int length)
         Serial.println(st);
         hoermann.set_state(st);
     } 
+    if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/set/delay_msg") == 0)  
+    {   
+        Serial.print("delay_msg: ");
+        Serial.println(st);
+        hoermann.set_delay(st.toInt());
+    } 
     else if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/set/light") == 0)  
     {   
         if (st == "toggle")

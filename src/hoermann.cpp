@@ -37,14 +37,17 @@ void Hoermann::run_loop(void)
                 make_scan_responce_msg(rx_buf, tx_buf);
                 while (true)
                 {
-                    if ((micros() - start) > (1000))
+                    if ((micros() - start) > (delay_msg))
                     {
                         if ((micros() - start) > max_frame_delay)
                         {
                             break;
                         }
                         scanning = true;
+
+                        
                         ser.serial_send(tx_buf);
+                        
                         print_buffer(tx_buf);
                         Serial.print("scan_response time: ");
                         scan_resp_time = micros() -s ;
@@ -63,14 +66,17 @@ void Hoermann::run_loop(void)
                 while (true)
                 {
                     
-                    if ((micros() - start) > (1000))
+                    if ((micros() - start) > (delay_msg))
                     {
                         if ((micros() - start) > max_frame_delay)
                         {
                             break;
                         }
                         connected = true;    
+                        
+  
                         ser.serial_send(tx_buf);
+
                         print_buffer(tx_buf);
                         Serial.print("status_req_response time: ");
                         req_resp_time = micros() -s;
@@ -91,6 +97,10 @@ void Hoermann::run_loop(void)
         }
         
     }
+}
+int Hoermann::set_delay(int delay_)
+{
+    delay_msg = delay_;
 }
 
 String Hoermann::is_connected()
