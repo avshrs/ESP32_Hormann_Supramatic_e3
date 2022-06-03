@@ -116,7 +116,7 @@ void loop()
     client.loop();
     hoermann.run_loop();
     
-    if (currentMillis - previousMillis >= 1000) 
+    if (currentMillis - previousMillis >= 60000) 
     {
         previousMillis = currentMillis;
 

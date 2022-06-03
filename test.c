@@ -589,9 +589,9 @@ int main(int argc, char **argv)
 					wrote += res;
 				}
 			} else {
-				printf("Read %d byte(s):\n", len);
+				
 				dump(buf, len);
-				printf("\n");
+				
 			}
 		}
 	}
