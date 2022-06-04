@@ -69,6 +69,7 @@ class Hoermann{
         int req_resp_time = 0;  
         int req_resp_counter = 0; 
         int delay_msg = 1000;  
+        int debud_level = 0;  
 
     public:
     
@@ -90,11 +91,13 @@ class Hoermann{
         int get_scan_resp_time();
         int set_delay(int delay);
         int get_req_resp_time();
+        void enable_debug(int level);        
+        void logy(String msg, int level);        
 
 
     private:
 
-        void print_buffer(uint8_t *buf, int size);
+        String buffer_to_string(uint8_t *buf, int size);
         void print_buffer(TX_Buffer &buf);
         
         void update_broadcast_status(RX_Buffer &buf);

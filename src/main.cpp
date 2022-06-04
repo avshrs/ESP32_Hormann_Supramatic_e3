@@ -24,13 +24,20 @@ void callback(char* topic, byte* payload, unsigned int length)
     }
     Serial.println();
 
+
+    
+    if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/set/debug") == 0)  
+    {   
+        hoermann.enable_debug(atoi((char *)payload));
+    } 
+
     if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/set/door") == 0)  
     {   
         Serial.print("set/door: ");
         Serial.println(st);
         hoermann.set_state(st);
     } 
-    if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/set/delay_msg") == 0)  
+    else if (strcmp(topic,"avshrs/sensors/hormann_garage_door_01/set/delay_msg") == 0)  
     {   
         Serial.print("delay_msg: ");
         Serial.println(st);

@@ -82,13 +82,16 @@ void SerialW::serial_read(RX_Buffer &rx_buffer)
             
             buf = Serial2.read();
             rx_buffer.buf[1] =  buf;
-            for( int i = 0 ; i<3; i++ ) 
+            if (buf == 0x02 || buf == 0x82 )
             {
-                while(!(Serial2.available())){}
-                buf = Serial2.read();
-                rx_buffer.buf[2+i] =  buf;
+                for( int i = 0 ; i<3; i++ ) 
+                {
+                    while(!(Serial2.available())){}
+                    buf = Serial2.read();
+                    rx_buffer.buf[2+i] =  buf;
+                }
+                rx_buffer.size = 5;
             }
-            rx_buffer.size = 5;
             
         }
     

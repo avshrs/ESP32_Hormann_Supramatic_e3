@@ -76,6 +76,7 @@ void reconnect()
                 client.subscribe("avshrs/sensors/hormann_garage_door_01/esp_led");
                 client.subscribe("avshrs/sensors/hormann_garage_door_01/set/door");
                 client.subscribe("avshrs/sensors/hormann_garage_door_01/set/delay_msg");
+                client.subscribe("avshrs/sensors/hormann_garage_door_01/set/debug");
                 prepare_conf();
 
             } 

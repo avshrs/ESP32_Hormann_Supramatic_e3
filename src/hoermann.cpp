@@ -6,10 +6,10 @@
 #include <iomanip>
 #include <unistd.h>
 #include <algorithm> // std::fill
-
+#include <sstream>
 #include <ctime> // localtime
 #include <stdlib.h>
-#include <sstream> // stringstream
+#include <ostream> 
 
 void Hoermann::init(int tx_pin)
 {
@@ -28,10 +28,11 @@ void Hoermann::run_loop(void)
     start = s;
 
     if (is_frame_corect(rx_buf))
-    {
+    {   
+        logy(buffer_to_string(rx_buf.buf,rx_buf.size), 5);
         if (is_slave_query(rx_buf))
         { 
-            print_buffer(rx_buf.buf,rx_buf.size);
+            logy(buffer_to_string(rx_buf.buf,rx_buf.size), 3);
             if (is_slave_scan(rx_buf))
             {
                 make_scan_responce_msg(rx_buf, tx_buf);
@@ -45,15 +46,12 @@ void Hoermann::run_loop(void)
                         }
                         scanning = true;
 
-                        
-                        ser.serial_send(tx_buf);
-                        
-                        print_buffer(tx_buf);
-                        Serial.print("scan_response time: ");
-                        scan_resp_time = micros() -s ;
-                        Serial.println(scan_resp_time);
-                        
+                        logy((String)("Pre Scan Response Time: "+(String)(micros() -s)), 4);
 
+                        ser.serial_send(tx_buf);
+                        scan_resp_time = micros() -s ;
+                        logy(buffer_to_string(tx_buf.buf,tx_buf.size), 3);
+                        logy((String)("Scan Response Time: "+ (String)(scan_resp_time)), 3);
                         break;
                     }
                 }
@@ -74,13 +72,12 @@ void Hoermann::run_loop(void)
                         }
                         connected = true;    
                         
+                        logy((String)("Pre Req Response Time: "+(String)(micros() -s)), 4);
   
                         ser.serial_send(tx_buf);
-
-                        print_buffer(tx_buf);
-                        Serial.print("status_req_response time: ");
                         req_resp_time = micros() -s;
-                        Serial.println(req_resp_time);
+                        logy(buffer_to_string(tx_buf.buf,tx_buf.size), 3);
+                        logy((String)("Req Response Time: "+(String)req_resp_time), 3);
                         
                         break;
                     }
@@ -92,17 +89,32 @@ void Hoermann::run_loop(void)
         {
             if (is_broadcast_lengh_correct(rx_buf))
             {
-                
                 update_broadcast_status(rx_buf);
                 broadcast_recv = true;
+                logy((String)("State Update Time: "+(String)(micros() -s)), 5);
             }
         }
         
     }
 }
+
 int Hoermann::set_delay(int delay_)
 {
     delay_msg = delay_;
+}
+
+
+void Hoermann::logy(String msg, int level)
+{
+    if (level == debud_level)
+    {
+        Serial.println(msg.c_str());
+    }
+}
+
+void Hoermann::enable_debug(int level)
+{
+    debud_level = level;
 }
 
 String Hoermann::is_connected()
@@ -198,9 +210,8 @@ bool Hoermann::is_broadcast(RX_Buffer &buf)
 {
     if (buf.size == 5)
     {
-        if (buf.buf[0] == BROADCAST_ADDR && calc_crc8(buf.buf, 4) == buf.buf[4])
+        if (buf.buf[0] == BROADCAST_ADDR)
         {
-            // print_buffer(buf.buf.data(), buf.size);
             return true;
         }
         else
@@ -230,10 +241,7 @@ bool Hoermann::is_frame_corect(RX_Buffer &buf)
 {
     if (buf.size > 3 && buf.size < 6)
     {
-        if (calc_crc8(buf.buf, buf.size - 1) == buf.buf[buf.size - 1])
-            return true;
-        else
-            return false;
+        return true;
     }
     else
     {
@@ -287,21 +295,25 @@ bool Hoermann::is_req_lengh_correct(RX_Buffer &buf)
         return false;
 }
 
-void Hoermann::print_buffer(uint8_t *buf, int size )
+String Hoermann::buffer_to_string(uint8_t *buf, int size )
 {
 
+    String stream;
+    
     if (size > 0)
     {
-        Serial.print((int)size, DEC);
-        Serial.print(" | ");
+        stream += size;
+        stream += " | ";
         for (int i = 0; i < (int)size; i++)
         {
-
-            Serial.print(" ");
-            Serial.print(buf[i], HEX);
+            stream += " ";
+            char str[10];
+            sprintf(str,"%x",buf[i]); //converts to hexadecimal base.
+            stream += str;
         }
-        Serial.println();
+        return stream.c_str();
     }
+    return " ";
 }
 
 void Hoermann::print_buffer(TX_Buffer &buf)
