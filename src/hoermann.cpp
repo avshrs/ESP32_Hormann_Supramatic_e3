@@ -353,7 +353,7 @@ void Hoermann::make_status_req_msg(RX_Buffer &rx_buf, TX_Buffer &tx_buf)
         tx_buf.buf[3] = static_cast<uint8_t>(slave_respone_data);
         tx_buf.buf[4] = 0x10;
     }
-    if (req_resp_counter > 2)
+    if (req_resp_counter > 0)
     {
         slave_respone_data = RESPONSE_DEFAULT;
         req_resp_counter = 0;
