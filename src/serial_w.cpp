@@ -14,14 +14,14 @@ void SerialW::send_brake()
     char buf[1] = {0};
     
     Serial2.updateConfig(9600, SERIAL_7N1);
-    Serial2.flush(true);
-
+    
     while(!Serial2.availableForWrite()){}
+    
     Serial2.write(buf, 1);
     
     Serial2.updateConfig(19200, SERIAL_8N1);
 
-    Serial2.flush(true);
+
 
 }
 
@@ -31,12 +31,17 @@ void SerialW::serial_send(TX_Buffer &tx_buffer)
 
     send_brake();
 
+    uint8_t d[1] = {0}; 
+    
     Serial2.flush();
 
     while(!Serial2.availableForWrite()){}
     Serial2.write(tx_buffer.buf, tx_buffer.size);   
-    delay(3);
-    Serial2.write(tx_buffer.buf, tx_buffer.size);    
+
+    usleep(3500);
+
+    Serial2.write(d, 1);  
+
     digitalWrite(EnTxPin, LOW);
 } 
 

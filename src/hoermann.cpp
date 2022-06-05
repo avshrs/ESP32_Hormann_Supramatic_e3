@@ -437,25 +437,30 @@ String Hoermann::get_state()
 
 void Hoermann::set_state(String action)
 {
-    if (action == "stop")
+    if (action == "stop" || action == "STOP")
     {
         slave_respone_data = RESPONSE_STOP;
+        Serial.println("stop");
     }
-    else if (action == "open")
+    else if (action == "open" || action == "OPEN")
     {
         slave_respone_data = RESPONSE_OPEN;
+        Serial.println("open");
     }
-    else if (action == "close")
+    else if (action == "close" || action == "CLOSE")
     {
         slave_respone_data = RESPONSE_CLOSE;
+        Serial.println("close");
     }
-    else if (action == "venting")
+    else if (action == "venting" || action == "VENTING")
     {
         slave_respone_data = RESPONSE_VENTING;
+        Serial.println("venting");
     }
-    else if (action == "light")
+    else if (action == "light" || action == "LIGHT")
     {
         slave_respone_data = RESPONSE_TOGGLE_LIGHT;
+        Serial.println("light");
     }
 }
 
