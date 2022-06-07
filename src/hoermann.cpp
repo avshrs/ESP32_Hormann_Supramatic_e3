@@ -434,33 +434,35 @@ String Hoermann::get_state()
 //     return cfg->get_offline_string();
 
 // }
+String Hoermann::get_state_hex()
+{
+    uint8_t buf[1] = {(uint8_t)broadcast_status}; 
+    String status = buffer_to_string(buf, 1);
+    return status;
+}
+
 
 void Hoermann::set_state(String action)
 {
     if (action == "stop" || action == "STOP")
     {
         slave_respone_data = RESPONSE_STOP;
-        Serial.println("stop");
     }
     else if (action == "open" || action == "OPEN")
     {
         slave_respone_data = RESPONSE_OPEN;
-        Serial.println("open");
     }
     else if (action == "close" || action == "CLOSE")
     {
         slave_respone_data = RESPONSE_CLOSE;
-        Serial.println("close");
     }
     else if (action == "venting" || action == "VENTING")
     {
         slave_respone_data = RESPONSE_VENTING;
-        Serial.println("venting");
     }
     else if (action == "light" || action == "LIGHT")
     {
         slave_respone_data = RESPONSE_TOGGLE_LIGHT;
-        Serial.println("light");
     }
 }
 

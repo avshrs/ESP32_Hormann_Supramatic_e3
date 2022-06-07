@@ -29,7 +29,7 @@ class Mqtt_Client;
 // +------- (0x80) Unknown
 //  +------ (0x40) Motor running: 1 == running. 0 == stopped.
 //   +----- (0x20) Motor direction: 1 == closing. 0 == opening.
-//    +---- (0x10) Unknown
+//    +---- (0x10) In 'H' postion Partially open
 //     +--- (0x08) Unknown
 //      +-- (0x04) Unknown
 //       +- (0x02) Fully closed 
@@ -40,7 +40,7 @@ class Mqtt_Client;
 // +------- (0x80) Unknown
 //  +------ (0x40) Unknown
 //   +----- (0x20) Unknown
-//    +---- (0x10) Moves to 'H' (whatever that means)
+//    +---- (0x10) Moves to 'H' Partially open
 //     +--- (0x08) Unknown
 //      +-- (0x04) Impulse toggle
 //       +- (0x02) Impulse close
@@ -84,7 +84,8 @@ class Hoermann{
         void reset_connected();       
         String is_scanning();        
         void reset_scanning();       
-        String is_broadcast_recv();         
+        String is_broadcast_recv();    
+        String get_state_hex();     
         void reset_broadcast();        
         String get_state();
         void set_state(String action);

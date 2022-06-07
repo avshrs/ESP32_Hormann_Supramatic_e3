@@ -35,28 +35,21 @@ return md;
 
 void prepare_conf()
 {   
-
     String s1 = "\"command_topic\":\"~/set/door\",\"position_topic\":\"~/state/door\",\"device_class\":\"garage\"}";
     String s1_ = make_discover("cover", "hormann_garage_door_01", "SupraMatic3-01", "Garage door", "hormann_garage_door_01",s1);
     client.publish("homeassistant/cover/hormann_garage_door_01/config", s1_.c_str(), true);
 
-
-
-    String s2 = "\"command_topic\":\"~/set/venting\",\"position_topic\":\"~/state/venting\",\"device_class\":\"garage\",\"payload_open\":\"venting\"}";
-    String s2_ = make_discover("cover", "hormann_garage_door_01", "SupraMatic3-01", "Garage door Venting", "hormann_garage_venting_door_01",s2);
-    client.publish("homeassistant/cover/hormann_garage_door_venting_01/config", s2_.c_str(), true);
-
+    String s4 = "\"command_topic\":\"~/set/venting\",\"state_topic\":\"~/state/venting\",\"payload_on\":\"venting\",\"payload_off\":\"close\",\" state_on\":\"venting\",\" state_off\":\"close\"}";
+    String s4_ = make_discover("switch", "hormann_garage_door_01", "SupraMatic3-01", "Garage door venting", "hormann_garage_wenting_switch_door_01",s4);
+    client.publish("homeassistant/switch/hormann_garage_door_venting_switch_01/config", s4_.c_str(), true);
 
     String s3 = "\"state_topic\":\"~/state/state\"}";
     String s3_ = make_discover("sensor", "hormann_garage_door_01", "SupraMatic3-01", "Garage door State", "hormann_garage_state_door_01",s3);
     client.publish("homeassistant/sensor/hormann_garage_door_state_01/config", s3_.c_str(), true);
-    
-  
-
    
-    String s4 = "\"command_topic\":\"~/set/light\",\"state_topic\":\"~/state/light\",\"device_class\":\"light\"}";
-    String s4_ = make_discover("light", "hormann_garage_door_01", "SupraMatic3-01", "Garage door Light", "hormann_garage_light_door_01",s4);
-    client.publish("homeassistant/light/hormann_garage_door_light_01/config", s4_.c_str(), true);
+    String s5 = "\"command_topic\":\"~/set/light\",\" payload_press\":\"light\"}";
+    String s5_ = make_discover("button", "hormann_garage_door_01", "SupraMatic3-01", "Garage door Light", "hormann_garage_light_door_01",s5);
+    client.publish("homeassistant/button/hormann_garage_door_light_01/config", s5_.c_str(), true);
 }   
 
 
@@ -70,7 +63,7 @@ void reconnect()
             old_mils = millis();
             Serial.print("Attempting MQTT connection...");
             // Create a random client ID
-            String clientId = "ESP_hormann_garage_door";
+            String clientId = "ESP_hormann_gate";
             
             clientId += String(random(0xffff), HEX);
             // Attempt to connect

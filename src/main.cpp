@@ -24,45 +24,43 @@ void callback(char* topic, byte* payload, unsigned int length)
     }
     Serial.println();
 
-    
-    if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/debug") == 0)  
+    if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/door") == 0)  
     {   
-        hoermann.enable_debug(atoi((char *)payload));
-    } 
-
-    else if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/door") == 0)  
-    {   
-        Serial.println(st);
-        hoermann.set_state(st);
+        if (st == "open" || st == "OPEN")
+        {
+            hoermann.door_open();
+        }
+        else if (st == "close" || st == "CLOSE")
+        {
+            hoermann.door_close();
+        }
     } 
     else if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/venting") == 0)  
     {   
-        Serial.println(st);
-        hoermann.set_state(st);
-    } 
-    else if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/delay_msg") == 0)  
-    {   
-        Serial.print("delay_msg: ");
-        Serial.println(st);
-        hoermann.set_delay(st.toInt());
+        if (st == "venting" || st == "VENTING")
+        {
+            hoermann.door_venting();
+        }
+        else if (st == "close" || st == "CLOSE")
+        {
+            hoermann.door_close();
+        }
     } 
     else if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/light") == 0)  
     {   
-        if (st == "ON" || st == "OFF")
-            hoermann.set_state("light");
+        if (st == "PRESS" )
+        {
+            hoermann.door_toggle_light();
+        }   
     }
-    else if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/esp_led") == 0 && (char)payload[0] == '1') 
-    {
-        Serial.println("BUILTIN_LED_low");
-        digitalWrite(BUILTIN_LED, LOW);   
+    else if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/debug") == 0)  
+    {   
+        hoermann.enable_debug(atoi((char *)payload));
     } 
-    else if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/esp_led") == 0 && (char)payload[0] == '0') 
-    {
-        Serial.println("BUILTIN_LED_high");
-        digitalWrite(BUILTIN_LED, HIGH); 
-    }
-
-
+    else if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/delay_msg") == 0)  
+    {   
+        hoermann.set_delay(st.toInt());
+    } 
 }
 
 void setup() 
@@ -93,24 +91,27 @@ void door_position(boolean force)
         if (hoermann.get_state() == "open")
         {
             client.publish("avshrs/devices/hormann_garage_door_01/state/door", "100");
+            client.publish("avshrs/devices/hormann_garage_door_01/state/venting", "venting");            
             client.publish("avshrs/devices/hormann_garage_door_01/state/state", "open");
         }
         else if (hoermann.get_state() == "closed")
         {
             client.publish("avshrs/devices/hormann_garage_door_01/state/door", "0");
-            client.publish("avshrs/devices/hormann_garage_door_01/state/venting", "0");
+            client.publish("avshrs/devices/hormann_garage_door_01/state/venting", "closed");
             client.publish("avshrs/devices/hormann_garage_door_01/state/state", "closed");
         }
         else if (hoermann.get_state() == "venting")
         {
             client.publish("avshrs/devices/hormann_garage_door_01/state/door", "10");
-            client.publish("avshrs/devices/hormann_garage_door_01/state/venting", "10");
+            client.publish("avshrs/devices/hormann_garage_door_01/state/venting", "venting");
             client.publish("avshrs/devices/hormann_garage_door_01/state/state", "venting");
         }
         else
         {
             client.publish("avshrs/devices/hormann_garage_door_01/state/door", "error");
         }
+        String data = "hex state: " + hoermann.get_state_hex();
+        client.publish("avshrs/devices/hormann_garage_door_01/status/gate", data.c_str());
     }
 }
 
@@ -151,7 +152,14 @@ void loop()
         client.publish("avshrs/devices/hormann_garage_door_01/state/light", "OFF");
         door_position(true);        
     }
+    if (currentMillis - previousMillis2 >= 600000) 
+    {
+        previousMillis2 = currentMillis;
+        prepare_conf();
+    }
+
     
+
     door_position(false);        
     
 }
