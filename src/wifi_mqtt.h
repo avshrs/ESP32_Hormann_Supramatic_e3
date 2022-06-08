@@ -39,7 +39,7 @@ void prepare_conf()
     String s1_ = make_discover("cover", "hormann_garage_door_01", "SupraMatic3-01", "Garage door", "hormann_garage_door_01",s1);
     client.publish("homeassistant/cover/hormann_garage_door_01/config", s1_.c_str(), true);
 
-    String s4 = "\"command_topic\":\"~/set/venting\",\"state_topic\":\"~/state/venting\",\"payload_on\":\"venting\",\"payload_off\":\"close\",\" state_on\":\"venting\",\" state_off\":\"close\"}";
+    String s4 = "\"command_topic\":\"~/set/venting\",\"state_topic\":\"~/state/venting\",\"payload_on\":\"venting\",\"payload_off\":\"close\",\" state_on\":\"venting\",\" state_off\":\"closed\"}";
     String s4_ = make_discover("switch", "hormann_garage_door_01", "SupraMatic3-01", "Garage door venting", "hormann_garage_wenting_switch_door_01",s4);
     client.publish("homeassistant/switch/hormann_garage_door_venting_switch_01/config", s4_.c_str(), true);
 
