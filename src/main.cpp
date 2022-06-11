@@ -29,7 +29,6 @@ void callback(char* topic, byte* payload, unsigned int length)
     {   
         hoermann.enable_debug(atoi((char *)payload));
     } 
-
     else if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/door") == 0)  
     {   
         Serial.println(st);
