@@ -20,9 +20,6 @@ void SerialW::send_brake()
     Serial2.write(buf, 1);
     
     Serial2.updateConfig(19200, SERIAL_8N1);
-
-
-
 }
 
 void SerialW::serial_send(TX_Buffer &tx_buffer)

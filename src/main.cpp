@@ -26,13 +26,25 @@ void callback(char* topic, byte* payload, unsigned int length)
 
     if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/door") == 0)  
     {   
-        if (st == "open" || st == "OPEN")
+        if (st == "open" || st == "OPEN" || st == "ON")
         {
             hoermann.door_open();
         }
-        else if (st == "close" || st == "CLOSE")
+        else if (st == "close" || st == "CLOSE" || st == "OFF")
         {
             hoermann.door_close();
+        }
+        else if (st == "stop" || st == "STOP")
+        {
+            hoermann.door_stop();
+        }
+        else if (st == "venting" || st == "VENTING")
+        {
+            hoermann.door_venting();
+        }
+        else if (st == "press" || st == "PRESS")
+        {
+            hoermann.door_toggle_light();
         }
     } 
     else if (strcmp(topic,"avshrs/devices/hormann_garage_door_01/set/venting") == 0)  
@@ -41,7 +53,7 @@ void callback(char* topic, byte* payload, unsigned int length)
         {
             hoermann.door_venting();
         }
-        else if (st == "close" || st == "CLOSE")
+        else if (st == "close" || st == "CLOSE"  || st == "OFF")
         {
             hoermann.door_close();
         }
@@ -80,6 +92,9 @@ void setup()
     client.setServer(mqtt_server, 1883);
     client.setBufferSize(1024);
     client.setCallback(callback);
+    reconnect();
+
+    prepare_conf();
 }
 
 void door_position(boolean force)
@@ -150,15 +165,9 @@ void loop()
         snprintf (msg, MSG_BUFFER_SIZE, "%i", hoermann.get_req_resp_time());
         client.publish("avshrs/devices/hormann_garage_door_01/status/req_resp_time", msg);
         client.publish("avshrs/devices/hormann_garage_door_01/state/light", "OFF");
-        door_position(true);        
+        door_position(true);
     }
-    if (currentMillis - previousMillis2 >= 600000) 
-    {
-        previousMillis2 = currentMillis;
-        prepare_conf();
-    }
-
-    
+   
 
     door_position(false);        
     
