@@ -11,42 +11,31 @@ class Mqtt_Client;
 #define UAP1_ADDR                 0x28
 
 #define UAP1_TYPE                 0x14
+#define CRC8_INITIAL_VALUE        0xF3
 
 #define CMD_SLAVE_SCAN            0x01
 #define CMD_SLAVE_STATUS_REQUEST  0x20
 #define CMD_SLAVE_STATUS_RESPONSE 0x29
 // Supramatic e3
+
 #define RESPONSE_DEFAULT          0x00
+#define RESPONSE_VENTING          0x00
+
 #define RESPONSE_STOP             0xff
 #define RESPONSE_OPEN             0x01
-#define RESPONSE_CLOSE            0x02
-#define RESPONSE_VENTING          0x10
-#define RESPONSE_TOGGLE_LIGHT     0x08
+#define RESPONSE_CLOSED            0x02
+#define RESPONSE_OPENING          0x40  //B 0100 0000
+#define RESPONSE_CLOSING          0x60  //B 0110 0000
 
-#define CRC8_INITIAL_VALUE        0xF3
-
-// Status mask for LineaMatic P:
-// +------- (0x80) Unknown
-//  +------ (0x40) Motor running: 1 == running. 0 == stopped.
-//   +----- (0x20) Motor direction: 1 == closing. 0 == opening.
-//    +---- (0x10) In 'H' postion Partially open
-//     +--- (0x08) Unknown
-//      +-- (0x04) Unknown
-//       +- (0x02) Fully closed 
-//        + (0x01) Fully open
+#define SET_OPEN             0x01
+#define SET_CLOSE            0x02
+#define SET_STOP             0xff
+#define SET_VENTING          0x10
+#define SET_TOGGLE_LIGHT     0x08
 
 
-// Command mask for LineaMatic P:
-// +------- (0x80) Unknown
-//  +------ (0x40) Unknown
-//   +----- (0x20) Unknown
-//    +---- (0x10) Moves to 'H' Partially open
-//     +--- (0x08) Unknown
-//      +-- (0x04) Impulse toggle
-//       +- (0x02) Impulse close
-//        + (0x01) Impulse open
-//           0x00  default
-// For some reason the second byte needs to be 0x10 (signals no error?)
+
+
 
 
 class Hoermann{
@@ -54,11 +43,13 @@ class Hoermann{
         SerialW ser;
 
     private:
-        
+        uint8_t pre_state = 0;
+        uint8_t buf_2_state = 0;
         unsigned long previousMillis = 0;  
         uint8_t slave_respone_data = RESPONSE_DEFAULT;
         uint8_t master_address = 0x80;
         uint16_t broadcast_status = 0;
+        uint8_t broadcast_pre_state = 0;
         uint8_t broadcast_lengh = 0x02; 
         uint8_t reguest_lengh = 0x01; 
         int max_frame_delay = 6000;
@@ -85,12 +76,13 @@ class Hoermann{
         String is_scanning();        
         void reset_scanning();       
         String is_broadcast_recv();    
-        String get_state_hex();     
+        String get_state_hex();    
+        String get_state_hex2();
         void reset_broadcast();        
         String get_state();
         void set_state(String action);
         int get_scan_resp_time();
-        int set_delay(int delay);
+        void set_delay(int delay);
         int get_req_resp_time();
         void enable_debug(int level);        
         void logy(String msg, int level);        

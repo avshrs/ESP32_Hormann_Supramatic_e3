@@ -28,7 +28,7 @@ void Hoermann::run_loop(void)
     start = s;
 
     if (is_frame_corect(rx_buf))
-    {   
+    {
         logy(buffer_to_string(rx_buf.buf,rx_buf.size), 5);
         if (is_slave_query(rx_buf))
         { 
@@ -98,7 +98,7 @@ void Hoermann::run_loop(void)
     }
 }
 
-int Hoermann::set_delay(int delay_)
+void Hoermann::set_delay(int delay_)
 {
     delay_msg = delay_;
 }
@@ -180,8 +180,33 @@ int Hoermann::get_req_resp_time()
 
 void Hoermann::update_broadcast_status(RX_Buffer &buf)
 {
+    buf_2_state = buf.buf[3];
     if (static_cast<uint8_t>(broadcast_status) != buf.buf[2])
     {
+        if(broadcast_pre_state == 0x02 && buf.buf[2] == 0x00)
+        {
+            broadcast_pre_state = 0x04;
+        }
+        else if(broadcast_pre_state == 0x01 && buf.buf[2] == 0x00)
+        {
+            broadcast_pre_state = 0x06;
+        }
+        else if(broadcast_pre_state == 0x04)
+        {
+            broadcast_pre_state = buf.buf[2];
+        }
+        else if(broadcast_pre_state == 0x06)
+        {
+            broadcast_pre_state = buf.buf[2];
+        }
+        else if(broadcast_pre_state == 0xff)
+        {
+            broadcast_pre_state = buf.buf[2];
+        }
+        else
+        {
+            broadcast_pre_state = buf.buf[2];
+        }
         broadcast_status = static_cast<uint16_t>(buf.buf[2]);
     }
 }
@@ -297,9 +322,7 @@ bool Hoermann::is_req_lengh_correct(RX_Buffer &buf)
 
 String Hoermann::buffer_to_string(uint8_t *buf, int size )
 {
-
     String stream;
-    
     if (size > 0)
     {
         stream += size;
@@ -355,7 +378,7 @@ void Hoermann::make_status_req_msg(RX_Buffer &rx_buf, TX_Buffer &tx_buf)
     tx_buf.buf[1] = 0x03 | get_counter(rx_buf);
 
     tx_buf.buf[2] = CMD_SLAVE_STATUS_RESPONSE;
-    if (slave_respone_data == RESPONSE_STOP)
+    if (slave_respone_data == SET_STOP)
     {
         tx_buf.buf[3] = 0x00;
         tx_buf.buf[4] = 0x00;
@@ -365,12 +388,7 @@ void Hoermann::make_status_req_msg(RX_Buffer &rx_buf, TX_Buffer &tx_buf)
         tx_buf.buf[3] = static_cast<uint8_t>(slave_respone_data);
         tx_buf.buf[4] = 0x10;
     }
-    // if (req_resp_counter > 0)
-    // {z
-        slave_respone_data = RESPONSE_DEFAULT;
-    //     req_resp_counter = 0;
-    // }
-    // req_resp_counter++;
+    slave_respone_data = RESPONSE_DEFAULT;
     tx_buf.buf[5] = calc_crc8(tx_buf.buf, 5);
     tx_buf.timeout = 1;
     tx_buf.size = 6;
@@ -379,19 +397,34 @@ void Hoermann::make_status_req_msg(RX_Buffer &rx_buf, TX_Buffer &tx_buf)
 
 String Hoermann::get_state()
 {
-    if ((broadcast_status) == 0x00)
+    if ((broadcast_pre_state) == 0x00)
     {
         String stat = "venting";
         return stat;
     }
-    else if ((broadcast_status) == 0x02)
+    else if ((broadcast_pre_state) == 0x02)
     {
         String stat = "closed";
         return stat;
     }
-    else if ((broadcast_status) == 0x01)
+    else if ((broadcast_pre_state) == 0x01)
     {
         String stat = "open";
+        return stat;
+    }
+    else if ((broadcast_pre_state) == 0x04)
+    {
+        String stat = "opening";
+        return stat;
+    }
+    else if ((broadcast_pre_state) == 0x06)
+    {
+        String stat = "closing";
+        return stat;
+    }
+    else if ((broadcast_pre_state) == 0xFF)
+    {
+        String stat = "stopped";
         return stat;
     }
     else
@@ -400,43 +433,16 @@ String Hoermann::get_state()
         return stat;
     }
 }
-// String Hoermann::get_state()
-// {
-//   if ((broadcast_status & 0x01) == 0x01)
-//   {
-//     return cfg->get_stopped_string();
-//   }
-//   else if ((broadcast_status & 0x02) == 0x02)
-//   {
-//     return cfg->get_open_string();
-//   }
-//   else if ((broadcast_status & 0x80) == 0x80)
-//   {
-//     return cfg->get_closed_string();
-//   }
-//   else if ((broadcast_status & 0x60) == 0x40)
-//   {
-//     return  cfg->get_venting_string();
-//   }
-//   else if ((broadcast_status & 0x60) == 0x60)
-//   {
-//     return  cfg->get_opening_string();
-//   }
-//   else if ((broadcast_status & 0x10) == 0x10)
-//   {
-//     return cfg->get_closing_string();
-//   }
-//   else if (broadcast_status == 0x00)
-//   {
-//     return cfg->get_error_string();
-//   }
-//   else
-//     return cfg->get_offline_string();
 
-// }
 String Hoermann::get_state_hex()
 {
     uint8_t buf[1] = {(uint8_t)broadcast_status}; 
+    String status = buffer_to_string(buf, 1);
+    return status;
+}
+String Hoermann::get_state_hex2()
+{
+    uint8_t buf[1] = {buf_2_state}; 
     String status = buffer_to_string(buf, 1);
     return status;
 }
@@ -446,23 +452,25 @@ void Hoermann::set_state(String action)
 {
     if (action == "stop" || action == "STOP")
     {
-        slave_respone_data = RESPONSE_STOP;
+        slave_respone_data = SET_STOP;
+        broadcast_pre_state = SET_STOP;
     }
     else if (action == "open" || action == "OPEN")
     {
-        slave_respone_data = RESPONSE_OPEN;
+        slave_respone_data = SET_OPEN;
     }
     else if (action == "close" || action == "CLOSE")
     {
-        slave_respone_data = RESPONSE_CLOSE;
+        slave_respone_data = SET_CLOSE;
     }
     else if (action == "venting" || action == "VENTING")
     {
-        slave_respone_data = RESPONSE_VENTING;
+        slave_respone_data = SET_VENTING;
+        broadcast_pre_state = 0x00;
     }
     else if (action == "light" || action == "LIGHT")
     {
-        slave_respone_data = RESPONSE_TOGGLE_LIGHT;
+        slave_respone_data = SET_TOGGLE_LIGHT;
     }
 }
 

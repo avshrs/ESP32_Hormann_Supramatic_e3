@@ -22,7 +22,7 @@ unsigned long old_mils = 60000;
 
 
 
-String make_discover(char* dev_type_, char* dev_name_, char *dev_name_ha, char * sens_name, char * unique_id, String entity_settings)
+String make_discover(String dev_type_, String dev_name_, String dev_name_ha, String sens_name, String unique_id, String entity_settings)
 {
 String md = (String)"{\"avty\":{\"topic\":\"avshrs/devices/" + (String)dev_name_ ;
 md += (String)"/status/connected\",\"payload_available\":\"true\",\"payload_not_available\":\"false\"},\"~\":\"avshrs/devices/"+(String)dev_name_+"\",";
@@ -35,7 +35,7 @@ return md;
 
 void prepare_conf()
 {   
-    String s1 = "\"command_topic\":\"~/set/door\",\"position_topic\":\"~/state/door\",\"device_class\":\"garage\"}";
+    String s1 = "\"command_topic\":\"~/set/door\",\"state_topic\":\"~/state/door\",\"device_class\":\"garage\"}";
     String s1_ = make_discover("cover", "hormann_garage_door_01", "SupraMatic3-01", "Garage door", "hormann_garage_door_01",s1);
     client.publish("homeassistant/cover/hormann_garage_door_01/config", s1_.c_str(), true);
 
@@ -136,4 +136,12 @@ void setup_wifi()
     Serial.println("WiFi connected");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
+}
+void wifi_fast_reconnect() 
+{
+    if(WiFi.status() != WL_CONNECTED)
+    {
+    WiFi.disconnect();
+    WiFi.reconnect();
+    }
 }

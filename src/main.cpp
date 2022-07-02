@@ -98,35 +98,57 @@ void setup()
 }
 
 void door_position(boolean force)
-{
+{   
+    state = hoermann.get_state();
     if (state != hoermann.get_state() || force ) 
     {
-        state = hoermann.get_state();
         
-        if (hoermann.get_state() == "open")
+        
+        if (state == "open")
         {
-            client.publish("avshrs/devices/hormann_garage_door_01/state/door", "100");
+            client.publish("avshrs/devices/hormann_garage_door_01/state/door", state.c_str());
             client.publish("avshrs/devices/hormann_garage_door_01/state/venting", "venting");            
-            client.publish("avshrs/devices/hormann_garage_door_01/state/state", "open");
+            client.publish("avshrs/devices/hormann_garage_door_01/state/state", state.c_str());
         }
-        else if (hoermann.get_state() == "closed")
+        else if (state == "opening")
         {
-            client.publish("avshrs/devices/hormann_garage_door_01/state/door", "0");
+            client.publish("avshrs/devices/hormann_garage_door_01/state/door", state.c_str());
+            client.publish("avshrs/devices/hormann_garage_door_01/state/venting", "venting");            
+            client.publish("avshrs/devices/hormann_garage_door_01/state/state", state.c_str());
+        }
+        else if (state == "closed")
+        {
+            client.publish("avshrs/devices/hormann_garage_door_01/state/door", state.c_str());
+            client.publish("avshrs/devices/hormann_garage_door_01/state/venting", state.c_str());
+            client.publish("avshrs/devices/hormann_garage_door_01/state/state", state.c_str());
+        }
+        else if (state == "closing")
+        {
+            client.publish("avshrs/devices/hormann_garage_door_01/state/door", state.c_str());
             client.publish("avshrs/devices/hormann_garage_door_01/state/venting", "closed");
-            client.publish("avshrs/devices/hormann_garage_door_01/state/state", "closed");
+            client.publish("avshrs/devices/hormann_garage_door_01/state/state", state.c_str());
         }
-        else if (hoermann.get_state() == "venting")
+        else if (state == "stopped")
         {
-            client.publish("avshrs/devices/hormann_garage_door_01/state/door", "10");
+            client.publish("avshrs/devices/hormann_garage_door_01/state/door", state.c_str());
             client.publish("avshrs/devices/hormann_garage_door_01/state/venting", "venting");
-            client.publish("avshrs/devices/hormann_garage_door_01/state/state", "venting");
+            client.publish("avshrs/devices/hormann_garage_door_01/state/state", state.c_str());
+        }
+        else if (state == "venting")
+        {
+            client.publish("avshrs/devices/hormann_garage_door_01/state/door", "stopped");
+            client.publish("avshrs/devices/hormann_garage_door_01/state/venting", state.c_str());
+            client.publish("avshrs/devices/hormann_garage_door_01/state/state", state.c_str());
         }
         else
         {
             client.publish("avshrs/devices/hormann_garage_door_01/state/door", "error");
         }
         String data = "hex state: " + hoermann.get_state_hex();
-        client.publish("avshrs/devices/hormann_garage_door_01/status/gate", data.c_str());
+        client.publish("avshrs/devices/hormann_garage_door_01/status/gate1", data.c_str());
+        String data2 = "hex state: " + hoermann.get_state_hex2();
+        client.publish("avshrs/devices/hormann_garage_door_01/status/gate2", data2.c_str());
+        
     }
 }
 
@@ -134,21 +156,22 @@ void loop()
 {
     currentMillis = millis();
 
-    if (!client.connected()) 
-    {
-        reconnect();
-    }
+    
     client.loop();
     hoermann.run_loop();
     
     if (currentMillis - previousMillis >= 60000) 
     {
+        wifi_fast_reconnect();
+        if (!client.connected()) 
+        {
+            reconnect();
+        }
         previousMillis = currentMillis;
-
+        
         wifi_status();
 
-        snprintf (msg, MSG_BUFFER_SIZE, "true");
-        client.publish("avshrs/devices/hormann_garage_door_01/status/connected", msg);
+        client.publish("avshrs/devices/hormann_garage_door_01/status/connected", "true");
 
         client.publish("avshrs/devices/hormann_garage_door_01/status/master_sending_broadcast", hoermann.is_broadcast_recv().c_str());
         hoermann.reset_broadcast();
